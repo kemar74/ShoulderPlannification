@@ -39,7 +39,7 @@ public:
     std::unique_ptr<ControlPoint> trigone;
     std::unique_ptr<ControlPoint> scapula;
 
-    std::unique_ptr<Slider3D> entryPointOnFriedman;
+    std::unique_ptr<ControlPoint> entryPointOnFriedman;
 
     bool centre_glene_validated = false;
     bool trigone_validated = false;
@@ -104,6 +104,7 @@ public Q_SLOTS:
     void setInclinaison(double newInclinaison);
     void setVersion(double newVersion);
 
+    void moveEntryPointToFitShoulder();
     void recomputeEntryPointPosition();
 
     void openStlFile(std::string filename);

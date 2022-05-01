@@ -89,7 +89,7 @@ void ShoulderSelectionViewer::init()
 
     this->openStlFile("C:/codes/Qt/ShoulerPlannification/src/asset/Scapula.stl");
 
-    this->entryPointOnFriedman = std::make_unique<Slider3D>();
+    this->entryPointOnFriedman = std::make_unique<ControlPoint>();
     this->entryPointOnFriedman->hide();
 
     dirMesh = Mesh(std::make_shared<Shader>(*Shader::default_shader));
@@ -102,11 +102,7 @@ void ShoulderSelectionViewer::init()
     QObject::connect(trigone.get(), &ControlPoint::modified, this, &ShoulderSelectionViewer::computeAllPlanes);
     QObject::connect(scapula.get(), &ControlPoint::modified, this, &ShoulderSelectionViewer::computeAllPlanes);
 
-    QObject::connect(entryPointOnFriedman.get(), &Slider3D::valueChanged, this, [&](float val) {
-        this->entryPointOnFriedman->blockSignals(true);
-        this->recomputeEntryPointPosition();
-        this->entryPointOnFriedman->blockSignals(false);
-    });
+    QObject::connect(entryPointOnFriedman.get(), &ControlPoint::modified, this, &ShoulderSelectionViewer::moveEntryPointToFitShoulder);
 
 //    startAnimation();
     this->computeAllPlanes();
@@ -144,7 +140,6 @@ void ShoulderSelectionViewer::draw()
     this->coronalPlaneMesh.display();
     this->friedmanAxisMesh.display(GL_LINES, 3.f);
 
-    this->entryPointOnFriedman->sliderMesh.hide(); // Don't display the trailer on the entry point, as it will be displayed by "dirVector"
     this->entryPointOnFriedman->display();
 
 
@@ -298,12 +293,13 @@ Vector3 ShoulderSelectionViewer::getScapulaToFriedmanBivector()
 
 Matrix ShoulderSelectionViewer::computePlannificationTransformMatrix()
 {
-    Vector3 entryPoint = this->entryPointOnFriedman->getControlPosition();
+    Vector3 entryPoint = this->entryPointOnFriedman->getPosition();
+    Vector3 fromGleneToEntry = entryPoint - getGlenePosition();
     Vector3 vectorFromCentreGlene = getGleneToTrigoneVector().normalize();
-    if ((entryPoint - getGlenePosition()).norm2() > 1e-8)
+//    if ((entryPoint - getGlenePosition()).norm2() > 1e-8)
 //        vectorFromCentreGlene *= -(entryPoint - getGlenePosition()).norm();
-        vectorFromCentreGlene *= -getDistanceToEntryPoint();
-
+//        vectorFromCentreGlene *= -getDistanceToEntryPoint();
+//    vectorFromCentreGlene += fromGleneToEntry;
     float versionRad = -degToRad(this->version);
     float inclinaisonRad = -degToRad(this->inclinaison);
 
@@ -326,11 +322,11 @@ Matrix ShoulderSelectionViewer::computePlannificationTransformMatrix()
     // Last operation to get the same orientation as the slide 19:
     plannifDirVector.rotate(-PI/2.f, plannifBinormalVector);
     plannifNormalVector.rotate(-PI/2.f, plannifBinormalVector);
-    entryPoint = getGlenePosition() + vectorFromCentreGlene;
+    Vector3 displayedEntryPoint = getGlenePosition() + vectorFromCentreGlene.normalized() * -getDistanceToEntryPoint() + fromGleneToEntry;
 
-    dirMesh.fromArray({entryPoint, entryPoint + plannifDirVector * 100.f});
-    normalMesh.fromArray({entryPoint, entryPoint + plannifNormalVector * 100.f});
-    binormalMesh.fromArray({entryPoint, entryPoint + plannifBinormalVector * 100.f});
+    dirMesh.fromArray({displayedEntryPoint, displayedEntryPoint + plannifDirVector * 100.f});
+    normalMesh.fromArray({displayedEntryPoint, displayedEntryPoint + plannifNormalVector * 100.f});
+    binormalMesh.fromArray({displayedEntryPoint, displayedEntryPoint + plannifBinormalVector * 100.f});
 
     std::vector<float> matrix_data = {
                             plannifDirVector.x     , plannifDirVector.y     , plannifDirVector.z     , 0,
@@ -442,8 +438,7 @@ void ShoulderSelectionViewer::backToPointSelection()
 
 void ShoulderSelectionViewer::initPlannificationInput()
 {
-    this->entryPointOnFriedman->setPositions(this->getGlenePosition(), this->getTrigonePosition());
-    this->entryPointOnFriedman->setValue(0.f);
+    this->entryPointOnFriedman->setPosition(this->getGlenePosition());
     this->entryPointOnFriedman->show();
 
     dirMesh.show();
@@ -473,10 +468,39 @@ void ShoulderSelectionViewer::setVersion(double newVersion)
     this->recomputeEntryPointPosition();
 }
 
+void ShoulderSelectionViewer::moveEntryPointToFitShoulder()
+{
+    Vector3 newEntryPointPosition = this->entryPointOnFriedman->getPosition();
+    Vector3 fromGleneToEntryPoint = (newEntryPointPosition - getGlenePosition());
+    Vector3 rayOrigin = (getGlenePosition() - getGleneToTrigoneVector()) + fromGleneToEntryPoint;
+    Vector3 rayDir = getGleneToTrigoneVector() * 10.f;
+
+    Vector3 collisionPoint(false);
+    std::vector<std::vector<Vector3>> triangles = this->shoulderMesh.getTriangles();
+    for (auto& t : triangles) {
+        Vector3 v1 = t[0];
+        Vector3 v2 = t[1];
+        Vector3 v3 = t[2];
+        Vector3 collision = Collision::segmentToTriangleCollision(rayOrigin, rayOrigin + rayDir, v1, v2, v3);
+        if (collision.isValid()) {
+            if (!collisionPoint.isValid() || (collision - rayOrigin) < (collisionPoint - rayOrigin))
+                collisionPoint = collision;
+        }
+    }
+    if (collisionPoint.isValid()) {
+        this->entryPointOnFriedman->blockSignals(true);
+        this->entryPointOnFriedman->setPosition(collisionPoint);
+        this->entryPointOnFriedman->blockSignals(false);
+    }
+    this->update();
+    computePlannificationTransformMatrix();
+}
+
 void ShoulderSelectionViewer::recomputeEntryPointPosition()
 {
+    /*
     // Retrieve the distance to be reused at the end
-    float distanceFromCentreGlene = (entryPointOnFriedman->getControlPosition() - getGlenePosition()).norm();
+    float distanceFromCentreGlene = getDistanceToEntryPoint();
     Vector3 vectorFromCentreGlene = getGleneToTrigoneVector().normalized();
     if (distanceFromCentreGlene > 1e-8)
         vectorFromCentreGlene *= -distanceFromCentreGlene;
@@ -491,9 +515,9 @@ void ShoulderSelectionViewer::recomputeEntryPointPosition()
     Vector3 inclinaisonRotationAxis = vectorFromCentreGlene.cross(getScapulaToFriedmanVector());
     vectorFromCentreGlene.rotate(inclinaisonRad, inclinaisonRotationAxis);
 
-    this->entryPointOnFriedman->setPositions(getGlenePosition() + vectorFromCentreGlene, getGlenePosition());
-    this->entryPointOnFriedman->setValue(0.f);
-
+//    this->entryPointOnFriedman->setPositions(getGlenePosition() + vectorFromCentreGlene, getGlenePosition());
+//    this->entryPointOnFriedman->setValue(0.f);
+*/
     this->computePlannificationTransformMatrix();
 
     this->update();
