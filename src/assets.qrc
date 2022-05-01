@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/assets">
+        <file>asset/skeleton.stl</file>
+        <file>src/Shaders/no_fragment_shader.glsl</file>
+        <file>src/Shaders/no_vertex_shader.glsl</file>
+    </qresource>
+</RCC>
