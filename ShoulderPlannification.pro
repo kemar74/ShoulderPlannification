@@ -4,7 +4,7 @@ CONFIG += qt opengl warn_on thread rtti console embed_manifest_exe no_keywords
 INCLUDEPATH *= src/
 
 unix {
-    INCLUDEPATH *= /home/simulateurrsm/Documents/libqglviewer/libQGLViewer-2.7.2 /home/simulateurrsm/Documents/eigen
+    INCLUDEPATH *= /home/simulateurrsm/Documents/libqglviewer/libQGLViewer-2.7.2 #/home/simulateurrsm/Documents/eigen
     LIBS *= -L/home/simulateurrsm/Documents/libqglviewer/libQGLViewer-2.7.2/QGLViewer -lQGLViewer-qt5
 }
 win32 {
@@ -20,6 +20,8 @@ win32 {
     LIBS *= -L"C:\Qt\libQGLViewer-2.7.2\QGLViewer" -lQGLViewer2 -lOpengl32
 }
 CONFIG += c++17
+
+TARGET = ShoulderPlannification
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
