@@ -124,20 +124,32 @@
               </item>
               <item>
                <layout class="QGridLayout" name="gridLayout_2">
-                <item row="0" column="1">
-                 <widget class="QDoubleSpinBox" name="inclinaison_input">
+                <item row="1" column="1">
+                 <widget class="QDoubleSpinBox" name="version_input">
                   <property name="minimum">
-                   <double>-99.000000000000000</double>
+                   <double>-180.000000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>180.000000000000000</double>
                   </property>
                   <property name="singleStep">
                    <double>1.000000000000000</double>
                   </property>
+                  <property name="stepType">
+                   <enum>QAbstractSpinBox::DefaultStepType</enum>
+                  </property>
                  </widget>
                 </item>
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label">
-                  <property name="text">
-                   <string>Inclinaison (°)</string>
+                <item row="0" column="1">
+                 <widget class="QDoubleSpinBox" name="inclinaison_input">
+                  <property name="minimum">
+                   <double>-180.000000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>180.000000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>1.000000000000000</double>
                   </property>
                  </widget>
                 </item>
@@ -148,16 +160,27 @@
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="1">
-                 <widget class="QDoubleSpinBox" name="version_input">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label">
+                  <property name="text">
+                   <string>Inclinaison (°)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QDoubleSpinBox" name="rotation_input">
                   <property name="minimum">
-                   <double>-99.000000000000000</double>
+                   <double>-180.000000000000000</double>
                   </property>
-                  <property name="singleStep">
-                   <double>1.000000000000000</double>
+                  <property name="maximum">
+                   <double>180.000000000000000</double>
                   </property>
-                  <property name="stepType">
-                   <enum>QAbstractSpinBox::DefaultStepType</enum>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_3">
+                  <property name="text">
+                   <string>Rotation (°)</string>
                   </property>
                  </widget>
                 </item>

@@ -133,6 +133,19 @@ void Shader::setLightSource(std::string pname, LightSource &value)
     this->setVector((pname + ".specular").c_str(), value.specular, 4);
 }
 
+void Shader::addLightSource(std::string pname, LightSource &value)
+{
+    this->setLightSource(pname + "[" + std::to_string(lightCount) +"]", value);
+    lightCount ++;
+    this->setInt(pname + "_count", this->lightCount);
+}
+
+void Shader::clearLightSources(std::string pname)
+{
+    this->lightCount = 0;
+    this->setInt(pname + "_count", 0);
+}
+
 void Shader::setPositionalLight(std::string pname, PositionalLight &value)
 {
     this->setLightSource(pname, value);

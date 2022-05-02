@@ -18,6 +18,8 @@ struct Material {
 
 uniform vec4 globalAmbiant;
 uniform PositionalLight light;
+uniform PositionalLight lights[100];
+uniform int lights_count;
 uniform Material material;
 
 uniform mat4 mv_matrix;
@@ -46,8 +48,19 @@ void main(void)
     float cosPhi = dot(H, N);
 
     vec4 ambiant = ((globalAmbiant * material.ambiant) + (light.ambiant * material.ambiant));
+
     vec4 diffuse = light.diffuse * material.diffuse * max(cosTheta, 0.0);
-    vec4 specular = light.specular * material.specular * pow(max(cosPhi, 0.0), material.shininness * 3.0);
+    vec4 specular = light.specular * material.specular * pow(max(cosPhi, 0.0), material.shininness);
+
+    for (int iLight = 0; iLight < lights_count; iLight++) {
+        vec3 iL = normalize(vec4(mv_matrix * vec4(lights[iLight].position.xyz - initialVertPos, 1.0)).xyz);
+        vec3 iR = reflect(-iL, N);
+        float iCosTheta = dot(iL, N);
+        float iCosPhi = dot(iR, V);
+        ambiant +=  (lights[iLight].ambiant * material.ambiant);
+        diffuse += lights[iLight].diffuse * material.diffuse * max(iCosTheta, 0.0);
+        specular += lights[iLight].specular * material.specular * pow(max(iCosPhi, 0.0), material.shininness);
+    }
 
     fragColor = vec4(ambiant + diffuse + specular);
 

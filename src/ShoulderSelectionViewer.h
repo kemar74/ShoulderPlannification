@@ -28,6 +28,7 @@ public:
     void draw();
 
     void mousePressEvent(QMouseEvent* event);
+    void mouseDoubleClickEvent(QMouseEvent* event);
 
     Mesh shoulderMesh;
     Mesh sagitalPlaneMesh;
@@ -63,6 +64,7 @@ public:
     Vector3 getGlenePosition() { return this->centre_glene->getPosition(); }
     Vector3 getTrigonePosition() { return this->trigone->getPosition(); }
     Vector3 getScapulaPosition() { return this->scapula->getPosition(); }
+    Vector3 getCentralPosition() { return (getGlenePosition() + getTrigonePosition() + getScapulaPosition()) / 3.f; }
     Vector3 getGleneToTrigoneVector();
     Vector3 getScapulaProjectionOnFriedman();
     Vector3 getScapulaToFriedmanVector();
@@ -80,6 +82,7 @@ public:
 
     float inclinaison;
     float version;
+    float rotation;
 
     // Should not be in the class, but meh!
     float degToRad(float degrees);
@@ -103,6 +106,7 @@ public Q_SLOTS:
     void initPlannificationInput();
     void setInclinaison(double newInclinaison);
     void setVersion(double newVersion);
+    void setRotation(double newRotation);
 
     void moveEntryPointToFitShoulder();
     void recomputeEntryPointPosition();

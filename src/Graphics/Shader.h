@@ -33,6 +33,8 @@ public:
     void setVector(std::string pname, Vector3 value);
     void setVector(std::string pname, float* value, int n);
     void setLightSource(std::string pname, LightSource& value);
+    void addLightSource(std::string pname, LightSource& value);
+    void clearLightSources(std::string pname);
     void setPositionalLight(std::string pname, PositionalLight& value);
     void setMaterial(std::string pname, Material& value);
     void setTexture2D(std::string pname, int index, Matrix3<int> texture);
@@ -47,6 +49,8 @@ public:
     const char* vertexShaderFilename;
     const char* fragmentShaderFilename;
     const char* geometryShaderFilename;
+
+    int lightCount = 0;
 
     int vShader = -1;
     int fShader = -1;

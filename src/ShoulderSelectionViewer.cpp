@@ -38,6 +38,7 @@ void ShoulderSelectionViewer::init()
     glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+    this->setBackgroundColor(QColor(Qt::GlobalColor::white));
     GlobalsGL::generateBuffers();
 
     this->camera()->setType(qglviewer::Camera::ORTHOGRAPHIC);
@@ -113,6 +114,7 @@ void ShoulderSelectionViewer::draw()
 {
     glClear(GL_DEPTH_BUFFER_BIT);
 
+
     float pMatrix[16];
     float mvMatrix[16];
     camera()->getProjectionMatrix(pMatrix);
@@ -124,12 +126,25 @@ void ShoulderSelectionViewer::draw()
         shader->setMatrix("mv_matrix", mvMatrix);
     });
 
-    if (useWireframeMode)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    else
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    if (useWireframeMode){
+//        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    } else {
+//        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+
+    Material bone_material(
+                    new float[4] {204/255.f, 198/255.f, 181/255.f, (useWireframeMode && false ? .5f : 1.f)}, // new float[4]{.28, .90, .00, 1.},
+                    new float[4] {102/255.f,  99/255.f,  90/255.f, (useWireframeMode && false ? .5f : 1.f)}, // new float[4]{.32, .80, .00, 1.},
+                    new float[4] {  0/255.f,   0/255.f,   0/255.f, (useWireframeMode && false ? .5f : 1.f)}, // new float[4]{.62, .56, .37, 1.},
+                    51.2f
+                    );
+    shoulderMesh.shader->setMaterial("material", bone_material);
+
     this->shoulderMesh.display();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    if (useWireframeMode) {
+        glClear(GL_DEPTH_BUFFER_BIT);
+    }
 
     this->centre_glene->display();
     this->trigone->display();
@@ -191,6 +206,33 @@ void ShoulderSelectionViewer::mousePressEvent(QMouseEvent *event)
     }
 
     QGLViewer::mousePressEvent(event);
+}
+
+void ShoulderSelectionViewer::mouseDoubleClickEvent(QMouseEvent *event)
+{
+//    QGLViewer::mouseDoubleClickEvent(event);
+    if (this->centre_glene_validated && this->trigone_validated && this->scapula_validated)
+    {
+        float maxDistance = (this->camera()->position() - this->camera()->pivotPoint()).norm();
+        Vector3 xAxis = getScapulaToFriedmanBivector().normalize();
+        Vector3 yAxis = getGleneToTrigoneVector().normalize();
+        Vector3 camDir = this->camera()->viewDirection();
+
+        float xDot = camDir.dot(xAxis);
+        float yDot = camDir.dot(yAxis);
+
+        if (std::abs(xDot) > std::abs(yDot)) {
+            this->camera()->setViewDirection(xAxis * (xDot > 0.f ? 1.f : -1.f));
+        } else {
+            this->camera()->setViewDirection(yAxis * (yDot > 0.f ? 1.f : -1.f));
+        }
+        this->camera()->setUpVector(getScapulaToFriedmanVector());
+        this->camera()->setPosition(getCentralPosition() - Vector3(camera()->viewDirection()) * maxDistance);
+
+        this->update();
+    } else {
+        QGLViewer::mouseDoubleClickEvent(event);
+    }
 }
 
 void ShoulderSelectionViewer::computeSagitalPlaneMesh()
@@ -296,12 +338,11 @@ Matrix ShoulderSelectionViewer::computePlannificationTransformMatrix()
     Vector3 entryPoint = this->entryPointOnFriedman->getPosition();
     Vector3 fromGleneToEntry = entryPoint - getGlenePosition();
     Vector3 vectorFromCentreGlene = getGleneToTrigoneVector().normalize();
-//    if ((entryPoint - getGlenePosition()).norm2() > 1e-8)
-//        vectorFromCentreGlene *= -(entryPoint - getGlenePosition()).norm();
-//        vectorFromCentreGlene *= -getDistanceToEntryPoint();
-//    vectorFromCentreGlene += fromGleneToEntry;
+
+
     float versionRad = -degToRad(this->version);
     float inclinaisonRad = -degToRad(this->inclinaison);
+    float rotationRad = -degToRad(this->rotation);
 
     this->plannifDirVector = getGleneToTrigoneVector().normalized();
     this->plannifNormalVector = getScapulaToFriedmanVector().normalized();
@@ -319,23 +360,30 @@ Matrix ShoulderSelectionViewer::computePlannificationTransformMatrix()
     plannifNormalVector.rotate(inclinaisonRad, inclinaisonRotationAxis);
     plannifBinormalVector.rotate(inclinaisonRad, inclinaisonRotationAxis);
 
-    // Last operation to get the same orientation as the slide 19:
-    plannifDirVector.rotate(-PI/2.f, plannifBinormalVector);
-    plannifNormalVector.rotate(-PI/2.f, plannifBinormalVector);
+    Vector3 rotationRotationAxis = plannifDirVector;
+    plannifNormalVector.rotate(rotationRad, rotationRotationAxis);
+    plannifBinormalVector.rotate(rotationRad, rotationRotationAxis);
+
     Vector3 displayedEntryPoint = getGlenePosition() + vectorFromCentreGlene.normalized() * -getDistanceToEntryPoint() + fromGleneToEntry;
 
-    dirMesh.fromArray({displayedEntryPoint, displayedEntryPoint + plannifDirVector * 100.f});
-    normalMesh.fromArray({displayedEntryPoint, displayedEntryPoint + plannifNormalVector * 100.f});
+    dirMesh.fromArray({displayedEntryPoint, displayedEntryPoint + plannifDirVector.rotated(-PI/2.f, plannifBinormalVector) * 100.f});
+    normalMesh.fromArray({displayedEntryPoint, displayedEntryPoint + plannifNormalVector.rotated(-PI/2.f, plannifBinormalVector) * 100.f});
     binormalMesh.fromArray({displayedEntryPoint, displayedEntryPoint + plannifBinormalVector * 100.f});
 
     std::vector<float> matrix_data = {
-                            plannifDirVector.x     , plannifDirVector.y     , plannifDirVector.z     , 0,
-                            plannifNormalVector.x  , plannifNormalVector.y  , plannifNormalVector.z  , 0,
-                            plannifBinormalVector.x, plannifBinormalVector.y, plannifBinormalVector.z, 0,
-                            entryPoint.x           , entryPoint.y           , entryPoint.z           , 1
-                         };
+        plannifDirVector.x     , plannifDirVector.y     , plannifDirVector.z     , 0,
+        plannifBinormalVector.x, plannifBinormalVector.y, plannifBinormalVector.z, 0,
+        plannifNormalVector.x  , plannifNormalVector.y  , plannifNormalVector.z  , 0,
+        entryPoint.x           , entryPoint.y           , entryPoint.z           , 1
+    };
+
     Matrix transform(4, 4, matrix_data.data());
     std::cout << transform << std::endl;
+
+    std::vector<GLdouble> d_matrix_data;
+    for (const auto& data : matrix_data) {
+        d_matrix_data.push_back(data);
+    }
     return transform;
 }
 
@@ -468,6 +516,12 @@ void ShoulderSelectionViewer::setVersion(double newVersion)
     this->recomputeEntryPointPosition();
 }
 
+void ShoulderSelectionViewer::setRotation(double newRotation)
+{
+    this->rotation = newRotation;
+    this->recomputeEntryPointPosition();
+}
+
 void ShoulderSelectionViewer::moveEntryPointToFitShoulder()
 {
     Vector3 newEntryPointPosition = this->entryPointOnFriedman->getPosition();
@@ -528,23 +582,6 @@ void ShoulderSelectionViewer::openStlFile(std::string filename)
     this->shoulderMesh.fromStl(filename);
     shoulderMesh.update();
 
-    LightSource light = PositionalLight(
-                new float[4]{.5, .5, .5, 1.},
-                new float[4]{.8, .8, .8, 1.},
-                new float[4]{.5, .5, .5, 1.},
-                Vector3(0.0, 0.0, 100.0)
-                );
-    float globalAmbiant[4] = {.10, .10, .10, 1.0};
-    Material bone_material(
-                    new float[4] { 20/255.f,  20/255.f,  20/255.f, 1.f}, // new float[4]{.28, .90, .00, 1.},
-                    new float[4] {200/255.f, 200/255.f, 200/255.f, 1.f}, // new float[4]{.32, .80, .00, 1.},
-                    new float[4] {250/255.f, 250/255.f, 250/255.f, 1.f}, // new float[4]{.62, .56, .37, 1.},
-                    51.2f
-                    );
-    shoulderMesh.shader->setLightSource("light", light);
-    shoulderMesh.shader->setVector("globalAmbiant", globalAmbiant, 4);
-    shoulderMesh.shader->setMaterial("material", bone_material);
-
     Vector3 minAABBox(false);
     Vector3 maxAABBox(false);
     Vector3 center;
@@ -556,11 +593,41 @@ void ShoulderSelectionViewer::openStlFile(std::string filename)
         center += vert;
     }
     center /= (float)shoulderMesh.vertexArray.size();
-//    std::cout << "Center at " << center << " - from " << minAABBox << " to " << maxAABBox << std::endl;
+
     this->setSceneCenter(center);
-    this->setSceneRadius((maxAABBox - minAABBox).norm());
-    this->camera()->setPosition(minAABBox - (maxAABBox - minAABBox));
+    this->setSceneRadius((maxAABBox - minAABBox).norm() * .8f);
+
     this->camera()->lookAt(center);
+    this->showEntireScene();
+
+    float controlPointsRadius = (maxAABBox - minAABBox).norm() * 0.01f;
+    std::cout << controlPointsRadius << std::endl;
+    this->centre_glene->setSphereRadius(controlPointsRadius);
+    this->trigone->setSphereRadius(controlPointsRadius);
+    this->scapula->setSphereRadius(controlPointsRadius);
+
+    float ambiant[4]  = {.3, .3, .3, 1.};
+    float diffuse[4]  = {.5, .5, .5, 1.};
+    float specular[4] = {.1, .1, .1, 1.};
+
+    LightSource light0 = PositionalLight(
+                ambiant,
+                diffuse,
+                specular,
+                center + Vector3(0.0, 0.0, 100.0)
+                );
+    LightSource light1 = PositionalLight(
+                ambiant,
+                diffuse,
+                specular,
+                center + Vector3(0.0, 100.0, 0.0)
+                );
+
+    float globalAmbiant[4] = {.10, .10, .10, 1.0};
+    shoulderMesh.shader->clearLightSources("lights");
+    shoulderMesh.shader->addLightSource("lights", light0);
+    shoulderMesh.shader->addLightSource("lights", light1);
+    shoulderMesh.shader->setVector("globalAmbiant", globalAmbiant, 4);
 }
 
 

@@ -46,6 +46,7 @@ ShoulderSelectionWindow::ShoulderSelectionWindow(QWidget *parent)
     });
     connect(ui->inclinaison_input, SIGNAL(valueChanged(double)), viewer, SLOT(setInclinaison(double)));
     connect(ui->version_input, SIGNAL(valueChanged(double)), viewer, SLOT(setVersion(double)));
+    connect(ui->rotation_input, SIGNAL(valueChanged(double)), viewer, SLOT(setRotation(double)));
     connect(ui->actionCharger, &QAction::triggered, this, &ShoulderSelectionWindow::openStlFile);
     connect(ui->first_model_loading_button, &QPushButton::pressed, this, &ShoulderSelectionWindow::openStlFile);
     connect(ui->actionExporter, &QAction::triggered, this, &ShoulderSelectionWindow::exportResultingMatrix);
@@ -84,7 +85,16 @@ void ShoulderSelectionWindow::exportResultingMatrix()
 {
     Matrix mat = this->viewer->computePlannificationTransformMatrix();
     QMessageBox msgBox;
-    msgBox.setText(QString::fromStdString("Matrice de transformation : \n" + mat.transpose().toString()));
+    msgBox.setText(QString::fromStdString("Matrice de transformation : \n" +
+                                          mat.transpose().toString() +
+                                          "\n\nPoint d'entrée :\n"
+                                          + std::to_string(mat[0][3]) + " " + std::to_string(mat[1][3]) + " " + std::to_string(mat[2][3])
+                                          +
+                    "\n\nMatrice en une ligne [column-major] : \n" +
+                    mat.displayValuesOneLine() +
+                    "\n\nMatrice en une ligne [row-major] : \n" +
+                    mat.transpose().displayValuesOneLine()
+                    ));
     msgBox.setTextInteractionFlags(Qt::TextSelectableByMouse);
     msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
     int ret = msgBox.exec();

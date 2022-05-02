@@ -24,6 +24,7 @@ public:
 
     std::string displayValues();
     std::string toString();
+    std::string displayValuesOneLine();
 
 
 //    friend Matrix operator+(Matrix a, Matrix& b);

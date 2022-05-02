@@ -312,6 +312,22 @@ void ControlPoint::mouseMoveEvent(QMouseEvent * const event, qglviewer::Camera *
     qglviewer::ManipulatedFrame::mouseMoveEvent(event, cam);
 }
 
+void ControlPoint::wheelEvent(QWheelEvent * const event, qglviewer::Camera * const camera)
+{
+    setSphereRadius(this->radius - event->angleDelta().y()/10.f);
+    this->startAction(QGLViewer::MouseAction::NO_MOUSE_ACTION);
+}
+
+void ControlPoint::setSphereRadius(float newRadius)
+{
+    if (minSphereRadius >= 0)
+        newRadius = std::max(minSphereRadius, newRadius);
+    if (maxSphereRadius >= 0)
+        newRadius = std::min(maxSphereRadius, newRadius);
+    this->radius = newRadius;
+    this->updateSphere();
+}
+
 void ControlPoint::allowAllAxisTranslation(bool allow)
 {
     this->allowedTranslations[X] = allow;
