@@ -87,7 +87,7 @@ void ShoulderSelectionViewer::init()
     scapula->allowAllAxisTranslation(true);
     scapula->hide();
 
-    this->openStlFile("C:/codes/Qt/ShoulerPlannification/src/asset/Scapula.stl");
+//    this->openStlFile("C:/codes/Qt/ShoulerPlannification/src/asset/Scapula.stl");
 
     this->entryPointOnFriedman = std::make_unique<ControlPoint>();
     this->entryPointOnFriedman->hide();
