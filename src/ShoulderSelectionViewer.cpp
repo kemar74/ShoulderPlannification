@@ -341,7 +341,7 @@ Matrix ShoulderSelectionViewer::computePlannificationTransformMatrix()
 
 
     float versionRad = -degToRad(this->version);
-    float inclinaisonRad = -degToRad(this->inclinaison);
+    float inclinaisonRad = degToRad(this->inclinaison);
     float rotationRad = -degToRad(this->rotation);
 
     this->plannifDirVector = getGleneToTrigoneVector().normalized();
@@ -638,6 +638,56 @@ void ShoulderSelectionViewer::openStlFile(std::string filename)
 QString ShoulderSelectionViewer::helpString() const {
   QString text("<h2>Planification Epaule</h2>");
   text += "Cette application minimaliste vous permet de définir la direction de la broche guide "
-          "";
+          "pour une plannification à faire. <br>"
+          "En entrée, importez un modèle 3D de l'omoplate au format STL puis en sortie vous retrouverez "
+          "une matrice de transformation afin de configurer vos axes programmés. <br>"
+          "<h3>Description de l'interface</h3>"
+          "En ouvrant le programme, un unique bouton est affiché dans la partie droite : \"Chargez un modèle STL pour commencer\".<br>"
+          "En cliquant sur ce bouton, vous pourrez chercher sur votre ordinateur pour le modèle 3D qui vous interesse. <br>"
+          "Vous avez alors une interface découpée en deux parties : <br>"
+          "<ul><li>À gauche : Une visualisation de l'os. Vous pouvez tourner autour en maintenant un clic gauche de la souris, "
+          "se translater en maintenant le clic droit et zoomer/dézoomer avec la molette de la souris.</li>"
+          "<li>À droite : Une série de boutons et d'options pas très esthétiques découpées en 3 niveaux :"
+          "<ul><li>En premier, la \"definition de points\" vous permettra de définir les points d'interêt sur le modèle 3D"
+          "(centre glène, trigone et base de la scapula). <br>"
+          "En selectionnant par exemple \"Centre glène\", vous pouvez définir le centre glène en cliquant sur le modèle 3D.</li>"
+          "<li>En second, quand les 3 points d'interêt seront définis, vous pourrez passer à la plannification en cliquant sur "
+          "la case à cocher \"Plannification\". La partie supérieure devrait se griser et cette partie se dégrisera. <br>"
+          "Dans la visualisation 3D un repère rouge vert et bleu s'affichera au point du centre glène, avec un petit point brun. <br>"
+          "Cela correspond à votre point d'entrée. En modifiant les valeurs \"Inclinaison (°)\", \"Version (°)\" et \"Rotation (°)\""
+          "vous verrez le repère se modifier pour conformer aux besoins. Vous pouvez déplacer le point d'entrée sur la surface de l'os "
+          "en cliquant sur le point brun. (Tips : utilisez <em>possiblement très doucement</em> la molette de la souris sur"
+          "le point pour augmenter/réduire sa taille). <br>"
+          "Quand votre configuration est bonne, cliquez sur \"Exporter le résultat\" pour obtenir toutes les informations à utiliser "
+          "dans vos prochains programmes. </li>"
+          "<li>Enfin, vous pouvez cocher/décocher les cases de \"Affichage\" pour voir/cacher les plans et axes de l'os. <br>"
+          "Cliquez sur \"Afficher en transparence\" pour pouvoir voir les axes à travers la surface de l'os. </li>"
+          "</ul>"
+          "</li>"
+          "</ul>"
+          ""
+          "<h3>Manipulation de l'interface</h3>"
+          "Tournez-vous autour de l'os en maintenant un clic gauche de la souris, "
+          "déplacez-vous en maintenant le clic droit et zoomez/dézoomez avec la molette de la souris. <br>"
+          "Les points d'interêt et le point d'entrée peuvent être déplacés en mantenant cliquée et en déplacant la souris. <br>"
+          "Le point d'entrée restera à la surface de l'os. <br>"
+          "Si les points sont trop grands/trop petits, utilisez la molette de la souris (ou deux doigts sur le trackpad) pour "
+          "agrandir/réduire leur taille. </br>"
+          ""
+          "<h3>Sortie de l'application</h3>"
+          "En cliquant sur \"Exporter les résultats\", le point d'entrée et les paramètres d'angles seront traduit en une "
+          "\"matrice de transformation\". Cette matrice est généralement utilisée par d'autres logiciels de plannification. <br>"
+          "Une fenêtre s'ouvrira en vous présentant cette matrice sous plusieurs formes (selon le logiciel necessitant cette matrice). <br>"
+          "<ul><li> Premièrement, la matrice sous forme \"mathématique\".</li>"
+          "<li>Les versions \"column-major\" et \"row-major\" vous sont données. Elles représentent cette même matrice, mais en une "
+          "unique ligne, ce qui est souvent demandé en entrée par les logiciels 3D. Une version parcourt la matrice de haut en bas "
+          "(column-major) tandis que l'autre la parcourt de gauche à droite (row-major). Simplement selectionnez et copiez-collez "
+          "le format qui vous interesse. </li>"
+          "<li>Vous retrouverez aussi les coordonnées du point d'entrée. Ces coordonnées sont contenues dans la matrice précédente, "
+          "mais vous aurez peut-être besoin d'avoir uniquement cette information. </li>"
+          "</ul>"
+          ""
+          "<h3>Plus d'informations / Questions </h3>"
+          "N'hesitez pas à m'envoyer un mail (marc.hartley@lirmm.fr)";
   return text;
 }

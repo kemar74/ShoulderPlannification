@@ -4,7 +4,7 @@ CONFIG += qt opengl warn_on thread rtti console embed_manifest_exe no_keywords
 INCLUDEPATH *= src/
 
 unix {
-    INCLUDEPATH *= /home/simulateurrsm/Documents/libqglviewer/libQGLViewer-2.7.2 #/home/simulateurrsm/Documents/eigen
+    INCLUDEPATH *= /home/simulateurrsm/Documents/libqglviewer/libQGLViewer-2.7.2
     LIBS *= -L/home/simulateurrsm/Documents/libqglviewer/libQGLViewer-2.7.2/QGLViewer -lQGLViewer-qt5
 }
 win32 {
@@ -12,7 +12,6 @@ win32 {
     # glew : https://github.com/nigels-com/glew
     # libqglviewer : http://www.libqglviewer.com/src/libQGLViewer-2.7.2.zip
     # Paths might need to be changed for you
-
     INCLUDEPATH *= "C:\codes\CPP\glew-2.1.0\include"
     INCLUDEPATH *= "C:\Qt\libQGLViewer-2.7.2"
 
