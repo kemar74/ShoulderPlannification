@@ -110,5 +110,12 @@ Vous pouvez maintenant lancer l'application depuis le .app créé à la racine c
 L'executable créé à la compilation est déjà un vrai executable, rien à faire!
 
 
+## Compatibilité avec OpenGL moderne
+Il est possible que le programme plante dans le cas où la version "moderne" d'OpenGL n'est pas compatible avec votre ordinateur.  
+Une petite tentative de corriger ce problème a été initiée, mais je ne garantie rien...  
+
+Si jamais, allez tout en bas du fichier "src/Graphics/Mesh.cpp" et modifiez la variable "useModernOpenGL" à "false". Puis recompilez le programme.  
+Si cela ne répare pas les soucis, merci de me le faire remonter, et pourquoi pas tenter de trouver la solution ensemble.
+
 ## En cas de problème
 N'hésitez pas à me contacter (marc.hartley@lirmm.fr)
