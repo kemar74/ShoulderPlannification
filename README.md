@@ -36,11 +36,20 @@ sudo apt-get install -y libglew-dev
 ```
 
 ### Etape 2 : installation de Qt
+#### Sous Windows
 Au plus simple, commencez par installer QtCreator : [lien vers l'installateur](https://www.qt.io/download-qt-installer) puis cliquez sur "Download".  
 Lancez l'installateur, créez un compte Qt (environ 2 minutes), acceptez les conditions puis appuyez sur "Suivant".  
 Choisissez le repertoire "C:\Qt" et l'installation personnalisée. Vous pouvez décocher l'association de type si vous le souhaitez. Appuyez sur "Suivant".  
-Parmis les composants à installer, developpez "Qt" et developpez "Qt 5.15.2". Si le but est seulement de compiler ce projet, ne cochez que "MinGW X.X.X 32/64 bits". (Qui pèse déjà 6Go sur Windows...) 
-J'espère que c'est aussi simple pour MacOS et Linux...
+Parmis les composants à installer, developpez "Qt" et developpez "Qt 5.15.2". Si le but est seulement de compiler ce projet, ne cochez que "MinGW X.X.X 32/64 bits". (Qui pèse déjà 6Go sur Windows...)  
+
+#### Sous Linux 
+Il semblerait qu'il est possible d'installer Qt et QtCreator avec 
+```
+sudo apt install qt5-default
+sudo apt install build-essential
+sudo apt install qtcreator
+```
+En espérant que ce soit aussi simple sur MacOS...
 
 ### Etape 3 : installation de LibQGLViewer
 Accedez à [libqglviewer.com](http://libqglviewer.com/download.html), un petit plugin liant Qt et OpenGL.  
