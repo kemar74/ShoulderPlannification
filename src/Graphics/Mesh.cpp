@@ -176,6 +176,10 @@ void Mesh::computeNormals()
             this->normalsArrayFloat.insert(this->normalsArrayFloat.end(), meanNormal.begin(), meanNormal.end());
         }
     }
+
+    for (size_t i = 0; i < normalsArrayFloat.size(); i += 3) {
+        this->normalsArray.push_back(Vector3(normalsArrayFloat[i], normalsArrayFloat[i+1], normalsArrayFloat[i+2]));
+    }
     this->needToUpdateNormals = true;
 }
 void Mesh::computeColors()
@@ -234,29 +238,31 @@ void Mesh::update()
 
 void Mesh::pushToBuffer()
 {
-    GlobalsGL::f()->glBindVertexArray(GlobalsGL::vao[this->bufferID]);
-    // Vertex
-    GlobalsGL::f()->glBindBuffer(GL_ARRAY_BUFFER, GlobalsGL::vbo[this->bufferID * 10 + 0]);
-    if (needToUpdatePositions)
-        GlobalsGL::f()->glBufferData(GL_ARRAY_BUFFER, this->vertexArrayFloat.size() * sizeof(float), &this->vertexArrayFloat.front(), GL_STATIC_DRAW);
-    GlobalsGL::f()->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    GlobalsGL::f()->glEnableVertexAttribArray(0);
+    if (useModernOpenGL) {
+        GlobalsGL::f()->glBindVertexArray(GlobalsGL::vao[this->bufferID]);
+        // Vertex
+        GlobalsGL::f()->glBindBuffer(GL_ARRAY_BUFFER, GlobalsGL::vbo[this->bufferID * 10 + 0]);
+        if (needToUpdatePositions)
+            GlobalsGL::f()->glBufferData(GL_ARRAY_BUFFER, this->vertexArrayFloat.size() * sizeof(float), &this->vertexArrayFloat.front(), GL_STATIC_DRAW);
+        GlobalsGL::f()->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        GlobalsGL::f()->glEnableVertexAttribArray(0);
 
-    // Textures
+        // Textures
 
-    // Normals
-    GlobalsGL::f()->glBindBuffer(GL_ARRAY_BUFFER, GlobalsGL::vbo[this->bufferID * 10 + 2]);
-    if (needToUpdateNormals)
-        GlobalsGL::f()->glBufferData(GL_ARRAY_BUFFER, this->normalsArrayFloat.size() * sizeof(float), &this->normalsArrayFloat.front(), GL_STATIC_DRAW);
-    GlobalsGL::f()->glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    GlobalsGL::f()->glEnableVertexAttribArray(2);
+        // Normals
+        GlobalsGL::f()->glBindBuffer(GL_ARRAY_BUFFER, GlobalsGL::vbo[this->bufferID * 10 + 2]);
+        if (needToUpdateNormals)
+            GlobalsGL::f()->glBufferData(GL_ARRAY_BUFFER, this->normalsArrayFloat.size() * sizeof(float), &this->normalsArrayFloat.front(), GL_STATIC_DRAW);
+        GlobalsGL::f()->glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        GlobalsGL::f()->glEnableVertexAttribArray(2);
 
-    // Colors
-    GlobalsGL::f()->glBindBuffer(GL_ARRAY_BUFFER, GlobalsGL::vbo[this->bufferID * 10 + 3]);
-    if (needToUpdateColors)
-        GlobalsGL::f()->glBufferData(GL_ARRAY_BUFFER, this->colorsArrayFloat.size() * sizeof(float), &this->colorsArrayFloat.front(), GL_STATIC_DRAW);
-    GlobalsGL::f()->glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    GlobalsGL::f()->glEnableVertexAttribArray(3);
+        // Colors
+        GlobalsGL::f()->glBindBuffer(GL_ARRAY_BUFFER, GlobalsGL::vbo[this->bufferID * 10 + 3]);
+        if (needToUpdateColors)
+            GlobalsGL::f()->glBufferData(GL_ARRAY_BUFFER, this->colorsArrayFloat.size() * sizeof(float), &this->colorsArrayFloat.front(), GL_STATIC_DRAW);
+        GlobalsGL::f()->glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        GlobalsGL::f()->glEnableVertexAttribArray(3);
+    }
     this->bufferReady = true;
 }
 void Mesh::display(GLenum shape, float lineWeight)
@@ -267,7 +273,9 @@ void Mesh::display(GLenum shape, float lineWeight)
     this->update();
     if(this->shader != nullptr)
         this->shader->use();
-    GlobalsGL::f()->glBindVertexArray(GlobalsGL::vao[this->bufferID]);
+    if (useModernOpenGL) {
+        GlobalsGL::f()->glBindVertexArray(GlobalsGL::vao[this->bufferID]);
+    }
     GlobalsGL::checkOpenGLError();
 
 //    glEnable(GL_DEPTH_TEST);
@@ -275,23 +283,39 @@ void Mesh::display(GLenum shape, float lineWeight)
     GLfloat previousLineWidth[1];
     glGetFloatv(GL_LINE_WIDTH, previousLineWidth);
     glLineWidth(lineWeight);
-    if (this->displayShape == GL_TRIANGLES)
-        glDrawArrays(this->displayShape, 0, this->vertexArrayFloat.size()/3);
-    else if (this->displayShape == GL_LINE_STRIP)
-        glDrawArrays(this->displayShape, 0, this->vertexArrayFloat.size() - 1);
-    else
-        glDrawArrays(this->displayShape, 0, this->vertexArrayFloat.size());
+    if (useModernOpenGL) {
+        if (this->displayShape == GL_TRIANGLES)
+            glDrawArrays(this->displayShape, 0, this->vertexArrayFloat.size()/3);
+        else if (this->displayShape == GL_LINE_STRIP)
+            glDrawArrays(this->displayShape, 0, this->vertexArrayFloat.size() - 1);
+        else
+            glDrawArrays(this->displayShape, 0, this->vertexArrayFloat.size());
+    } else {
+        glEnable(GL_RESCALE_NORMAL);
+        std::cout << vertexArray.size() << " " << colorsArray.size() << " " << normalsArray.size() << std::endl;
+        glBegin(this->displayShape);
+        for (size_t i = 0; i < this->vertexArray.size(); i++) {
+            if (this->colorsArray.size() > i)
+                glColor3f(colorsArray[i].x, colorsArray[i].y, colorsArray[i].z);
+            if (this->normalsArray.size() > i)
+                glNormal3f(normalsArray[i].x, normalsArray[i].y, normalsArray[i].z);
+            glVertex3f(vertexArray[i].x, vertexArray[i].y, vertexArray[i].z);
+        }
+        glEnd();
+    }
     glLineWidth(previousLineWidth[0]);
 
-    if (this->shader != nullptr) {
-        if (this->shader->vShader != -1)
-            GlobalsGL::printShaderErrors(this->shader->vShader);
-        if (this->shader->fShader != -1)
-            GlobalsGL::printShaderErrors(this->shader->fShader);
-        if (this->shader->gShader != -1)
-            GlobalsGL::printShaderErrors(this->shader->gShader);
-        GlobalsGL::printProgramErrors(this->shader->programID);
-        GlobalsGL::checkOpenGLError();
+    if (useModernOpenGL) {
+        if (this->shader != nullptr) {
+            if (this->shader->vShader != -1)
+                GlobalsGL::printShaderErrors(this->shader->vShader);
+            if (this->shader->fShader != -1)
+                GlobalsGL::printShaderErrors(this->shader->fShader);
+            if (this->shader->gShader != -1)
+                GlobalsGL::printShaderErrors(this->shader->gShader);
+            GlobalsGL::printProgramErrors(this->shader->programID);
+            GlobalsGL::checkOpenGLError();
+        }
     }
 }
 

@@ -71,6 +71,8 @@ public:
     static void setShaderToAllMeshesWithoutShader(Shader newShader);
 
     static std::vector<Mesh*> all_meshes;
+
+    bool useModernOpenGL = true;
 };
 
 #endif // MESH_H
