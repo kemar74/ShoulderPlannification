@@ -601,7 +601,6 @@ void ShoulderSelectionViewer::openStlFile(std::string filename)
     this->showEntireScene();
 
     float controlPointsRadius = (maxAABBox - minAABBox).norm() * 0.01f;
-    std::cout << controlPointsRadius << std::endl;
     this->centre_glene->setSphereRadius(controlPointsRadius);
     this->trigone->setSphereRadius(controlPointsRadius);
     this->scapula->setSphereRadius(controlPointsRadius);
@@ -610,13 +609,13 @@ void ShoulderSelectionViewer::openStlFile(std::string filename)
     float diffuse[4]  = {.5, .5, .5, 1.};
     float specular[4] = {.1, .1, .1, 1.};
 
-    LightSource light0 = PositionalLight(
+    PositionalLight light0 = PositionalLight(
                 ambiant,
                 diffuse,
                 specular,
                 center + Vector3(0.0, 0.0, 100.0)
                 );
-    LightSource light1 = PositionalLight(
+    PositionalLight light1 = PositionalLight(
                 ambiant,
                 diffuse,
                 specular,
@@ -624,10 +623,29 @@ void ShoulderSelectionViewer::openStlFile(std::string filename)
                 );
 
     float globalAmbiant[4] = {.10, .10, .10, 1.0};
+#if useModernOpenGL
     shoulderMesh.shader->clearLightSources("lights");
     shoulderMesh.shader->addLightSource("lights", light0);
     shoulderMesh.shader->addLightSource("lights", light1);
     shoulderMesh.shader->setVector("globalAmbiant", globalAmbiant, 4);
+#else
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT1);
+    shoulderMesh.colorsArray = std::vector<Vector3>(shoulderMesh.vertexArray.size(), Vector3(204/255.f, 198/255.f, 181/255.f));
+    shoulderMesh.computeColors();
+
+    glLightfv(GL_LIGHT0, GL_POSITION, light0.position);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light0.ambiant);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light0.diffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light0.specular);
+
+    glLightfv(GL_LIGHT1, GL_POSITION, light1.position);
+    glLightfv(GL_LIGHT1, GL_AMBIENT, light1.ambiant);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, light1.diffuse);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, light1.specular);
+
+#endif
 }
 
 

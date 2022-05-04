@@ -37,7 +37,7 @@ void Slider3D::setPositions(Vector3 newStart, Vector3 newEnd)
     this->constraint = new SliderConstraint(minPos, maxPos);
     this->sliderControlPoint->custom_constraint = constraint;
 //    this->sliderControlPoint->setConstraint(new SliderConstraint(newStart, newEnd));
-    std::cout << "New positions : " << newStart << " " << newEnd << std::endl;
+//    std::cout << "New positions : " << newStart << " " << newEnd << std::endl;
     this->sliderMesh.fromArray({minPos, maxPos});
 }
 

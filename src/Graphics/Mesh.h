@@ -72,7 +72,7 @@ public:
 
     static std::vector<Mesh*> all_meshes;
 
-    bool useModernOpenGL = true;
+//    bool useModernOpenGL = true;
 };
 
 #endif // MESH_H

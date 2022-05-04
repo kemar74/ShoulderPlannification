@@ -238,7 +238,7 @@ void Mesh::update()
 
 void Mesh::pushToBuffer()
 {
-    if (useModernOpenGL) {
+#if useModernOpenGL
         GlobalsGL::f()->glBindVertexArray(GlobalsGL::vao[this->bufferID]);
         // Vertex
         GlobalsGL::f()->glBindBuffer(GL_ARRAY_BUFFER, GlobalsGL::vbo[this->bufferID * 10 + 0]);
@@ -262,7 +262,7 @@ void Mesh::pushToBuffer()
             GlobalsGL::f()->glBufferData(GL_ARRAY_BUFFER, this->colorsArrayFloat.size() * sizeof(float), &this->colorsArrayFloat.front(), GL_STATIC_DRAW);
         GlobalsGL::f()->glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
         GlobalsGL::f()->glEnableVertexAttribArray(3);
-    }
+#endif
     this->bufferReady = true;
 }
 void Mesh::display(GLenum shape, float lineWeight)
@@ -273,26 +273,35 @@ void Mesh::display(GLenum shape, float lineWeight)
     this->update();
     if(this->shader != nullptr)
         this->shader->use();
-    if (useModernOpenGL) {
-        GlobalsGL::f()->glBindVertexArray(GlobalsGL::vao[this->bufferID]);
-    }
-    GlobalsGL::checkOpenGLError();
-
-//    glEnable(GL_DEPTH_TEST);
-//    glDepthFunc(GL_LEQUAL);
+    //    glEnable(GL_DEPTH_TEST);
+    //    glDepthFunc(GL_LEQUAL);
     GLfloat previousLineWidth[1];
     glGetFloatv(GL_LINE_WIDTH, previousLineWidth);
     glLineWidth(lineWeight);
-    if (useModernOpenGL) {
-        if (this->displayShape == GL_TRIANGLES)
-            glDrawArrays(this->displayShape, 0, this->vertexArrayFloat.size()/3);
-        else if (this->displayShape == GL_LINE_STRIP)
-            glDrawArrays(this->displayShape, 0, this->vertexArrayFloat.size() - 1);
-        else
-            glDrawArrays(this->displayShape, 0, this->vertexArrayFloat.size());
-    } else {
+    if (this->shader != nullptr) {
+        if (this->shader->vShader != -1)
+            GlobalsGL::printShaderErrors(this->shader->vShader);
+        if (this->shader->fShader != -1)
+            GlobalsGL::printShaderErrors(this->shader->fShader);
+        if (this->shader->gShader != -1)
+            GlobalsGL::printShaderErrors(this->shader->gShader);
+        GlobalsGL::printProgramErrors(this->shader->programID);
+        GlobalsGL::checkOpenGLError();
+    }
+
+#if useModernOpenGL
+    GlobalsGL::f()->glBindVertexArray(GlobalsGL::vao[this->bufferID]);
+    GlobalsGL::checkOpenGLError();
+
+    if (this->displayShape == GL_TRIANGLES)
+        glDrawArrays(this->displayShape, 0, this->vertexArrayFloat.size()/3);
+    else if (this->displayShape == GL_LINE_STRIP)
+        glDrawArrays(this->displayShape, 0, this->vertexArrayFloat.size() - 1);
+    else
+        glDrawArrays(this->displayShape, 0, this->vertexArrayFloat.size());
+#else
         glEnable(GL_RESCALE_NORMAL);
-        std::cout << vertexArray.size() << " " << colorsArray.size() << " " << normalsArray.size() << std::endl;
+//        std::cout << vertexArray.size() << " " << colorsArray.size() << " " << normalsArray.size() << std::endl;
         glBegin(this->displayShape);
         for (size_t i = 0; i < this->vertexArray.size(); i++) {
             if (this->colorsArray.size() > i)
@@ -302,21 +311,8 @@ void Mesh::display(GLenum shape, float lineWeight)
             glVertex3f(vertexArray[i].x, vertexArray[i].y, vertexArray[i].z);
         }
         glEnd();
-    }
+#endif
     glLineWidth(previousLineWidth[0]);
-
-    if (useModernOpenGL) {
-        if (this->shader != nullptr) {
-            if (this->shader->vShader != -1)
-                GlobalsGL::printShaderErrors(this->shader->vShader);
-            if (this->shader->fShader != -1)
-                GlobalsGL::printShaderErrors(this->shader->fShader);
-            if (this->shader->gShader != -1)
-                GlobalsGL::printShaderErrors(this->shader->gShader);
-            GlobalsGL::printProgramErrors(this->shader->programID);
-            GlobalsGL::checkOpenGLError();
-        }
-    }
 }
 
 void Mesh::displayNormals()
