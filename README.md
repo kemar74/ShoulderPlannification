@@ -60,7 +60,11 @@ Telechargez le .zip dans "C:\Qt" puis extraire le contenu.
 * Partie MacOS et Linux*  
 Telechargez le .tar.gz dans "C:\Qt" puis extraire le contenu.
 
-Depuis QtCreator, ouvrez le fichier extrait "QGLViewer/QGLViewer.pro". Cliquez sur "Configure project" en bas à droite. Puis lancez la compilation avec le "Build" (symbole de marteau en bas à gauche).
+Depuis QtCreator, ouvrez le fichier extrait "QGLViewer/QGLViewer.pro" (Pas celui à la racine du dossier, mais dans le dossier "QGLViewer"). Cliquez sur "Configure project" en bas à droite.  
+La section "Mac" de ce fichier .pro, on va forcer la création de librairies dynamiques. Pour ça, repérez la ligne `!staticlib: CONFIG *= lib_bundle` et commentez-la :  
+```# !staticlib: CONFIG *= lib_bundle```  
+
+Puis lancez la compilation avec le "Build" (symbole de marteau en bas à gauche).
 
 * Partie Windows *  
 Au même niveau que "QGLViewer.pro" vous devez maintenant trouver les fichiers "QGLViewer2.dll" et "QGLViewer2d.dll". Copiez-les dans le dossier "System32" de votre machine (ou alternativement uniquement uniquement aux cotés des futurs executables créés par la suite).  
@@ -69,6 +73,16 @@ Dans notre projet à nous, modifiez la configuration en repérant dans "Shoulder
 * Partie MacOS et Linux *  
 Au même niveau que "QGLViewer.pro" vous devez maintenant trouver le fichier "libQGLViewer-2.X.X.so". Copiez-les dans le dossier "/usr/lib/" de votre machine (ou alternativement uniquement uniquement aux cotés des futurs executables créés par la suite).  
 Dans notre projet à nous, modifiez la configuration en repérant dans "ShoulderPlannification.pro" les lignes `INCLUDEPATH *= "C:\Qt\libQGLViewer-2.7.2"` et `LIBS *= -L"C:\Qt\libQGLViewer-2.7.2\QGLViewer" -lQGLViewer2 -lOpengl32` et modifiez les pour correspondre à votre cas.
+
+#### (Impossible de lancer QtCreator?)
+Si les projets ne peuvent pas être configurés par QtCreator, on va devoir faire ça à la main. Qt devrait tout de même avoir installé les compilateurs et outils de compilation essentiels.  
+Les outils de compilation sont installés dans un repertoire du genre "chemin/vers/Qt/5.15.2/nom_de_mon_compilateur/bin/". (Sous windows, "nom_de_mon_compilateur" peut être "minGW_81_64" par exemple, ou sur MacOS ça peut être "clang", etc...)
+
+Ouvrez un terminal et positionnez-vous au niveau du fichier .pro qui vous interesse.
+Lancez la compilation : `chemin/vers/Qt/5.15.2/nom_de_mon_compilateur/bin/qmake`  
+Sous MacOS, il faut ajouter des options: `chemin/vers/Qt/5.15.2/nom_de_mon_compilateur/bin/qmake  -spec macx-xcode`  
+
+Cela génère un Makefile, vous pouvez maintenant lancer la simple commande `make`.
 
 
 
@@ -103,8 +117,13 @@ cd C:\chemin\vers\ShoulderPlannification\puis\le\dossier\avec\le\app\cree
 macdeployqt ShoulderPlannification.app
 cp ShoulderPlannification.app "C:\chemin\vers\ShoulderPlannification\ShoulderPlannification.app"
 ```
+L'outil "macdeployqt" n'est peut-être pas inclu dans le PATH, donc il faudra possiblement le retrouver dans le dossier d'installation de Qt.  
+Le chemin est probablement du genre "chemin/vers/Qt/5.15.2/clang/bin/macdeployqt.app".
 
 Vous pouvez maintenant lancer l'application depuis le .app créé à la racine car il sera accompagné de plusieurs fichiers et dossiers de Qt. N'hésitez pas à créer un raccourci pour lancer l'application depuis un endroit plus pratique.
+
+Pour lancer l'application sans QtCreator, je ne connais pas bien MacOS, mais la commande `ShoulderPlannification.app/Contents/MacOS/ShoulderPlannification` semble fonctionner.
+
 
 #### Sous Linux 
 L'executable créé à la compilation est déjà un vrai executable, rien à faire!
@@ -114,7 +133,7 @@ L'executable créé à la compilation est déjà un vrai executable, rien à fai
 Il est possible que le programme plante dans le cas où la version "moderne" d'OpenGL n'est pas compatible avec votre ordinateur.  
 Une petite tentative de corriger ce problème a été initiée, mais je ne garantie rien...  
 
-Si jamais, allez tout en bas du fichier "src/Graphics/Mesh.cpp" et modifiez la variable "useModernOpenGL" à "false". Puis recompilez le programme.  
+Si jamais, allez tout en haut du fichier "src/Utils/Globals.h" et modifiez la variable "useModernOpenGL" à "0". Puis recompilez le programme.  
 Si cela ne répare pas les soucis, merci de me le faire remonter, et pourquoi pas tenter de trouver la solution ensemble.
 
 ## En cas de problème
