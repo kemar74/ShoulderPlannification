@@ -3,20 +3,32 @@ CONFIG += qt opengl warn_on thread rtti console embed_manifest_exe no_keywords
 
 INCLUDEPATH *= src/
 
-unix {
+# I installed the sources of:
+# glew : https://github.com/nigels-com/glew
+# libqglviewer : http://www.libqglviewer.com/src/libQGLViewer-2.7.2.zip
+# Paths might need to be changed for you
+unix:!mac {
     INCLUDEPATH *= /home/simulateurrsm/Documents/libqglviewer/libQGLViewer-2.7.2
-    LIBS *= -L/home/simulateurrsm/Documents/libqglviewer/libQGLViewer-2.7.2/QGLViewer -lQGLViewer-qt5
+    LIBS *= -L/home/simulateurrsm/Documents/libqglviewer/libQGLViewer-2.7.2/QGLViewer
+    LIBS *= -lQGLViewer-qt5
+}
+unix:mac {
+    INCLUDEPATH *= /usr/local/opt/glew/include
+    LIBS *= -L/usr/local/opt/glew/lib
+
+    INCLUDEPATH *= /Users/cyril/Desktop/marc/Qt/libQGLViewer-2.8.0
+    LIBS *= -L/Users/cyril/Desktop/marc/Qt/libQGLViewer-2.8.0/QGLViewer
+
+    LIBS *= -lQGLViewer -lGLEW
 }
 win32 {
-    # I installed the sources of:
-    # glew : https://github.com/nigels-com/glew
-    # libqglviewer : http://www.libqglviewer.com/src/libQGLViewer-2.7.2.zip
-    # Paths might need to be changed for you
     INCLUDEPATH *= "C:\codes\CPP\glew-2.1.0\include"
     INCLUDEPATH *= "C:\Qt\libQGLViewer-2.7.2"
 
     LIBS *= -L"C:\codes\CPP\glew-2.1.0\lib\Release\x64\glew32.lib"
-    LIBS *= -L"C:\Qt\libQGLViewer-2.7.2\QGLViewer" -lQGLViewer2 -lOpengl32
+    LIBS *= -L"C:\Qt\libQGLViewer-2.7.2\QGLViewer"
+
+    LIBS *= -lQGLViewer2 -lOpengl32
 }
 CONFIG += c++17
 
@@ -105,4 +117,10 @@ RESOURCES += \
     src/Shaders/particle_vertex_shader.glsl \
     src/Shaders/vertex_shader_gouraud.glsl \
     src/Shaders/voxels_fragment_shader_blinn_phong.glsl \
-    src/Shaders/voxels_vertex_shader_blinn_phong.glsl
+    src/Shaders/voxels_vertex_shader_blinn_phong.glsl\
+    src/Shaders/gouraud_120.frag \
+    src/Shaders/gouraud_120.vert \
+    src/Shaders/no_shader.frag \
+    src/Shaders/no_shader.vert
+
+DISTFILES +=

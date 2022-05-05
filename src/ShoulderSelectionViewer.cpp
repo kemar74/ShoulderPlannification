@@ -46,13 +46,30 @@ void ShoulderSelectionViewer::init()
     setTextIsEnabled(true);
     setMouseTracking(true);
 
+#if useModernOpenGL
+    /*
     const char* vNoShader = ":/src/Shaders/no_vertex_shader.glsl";
     const char* fNoShader = ":/src/Shaders/no_fragment_shader.glsl";
     const char* vShader_grid = ":/src/Shaders/vertex_shader_gouraud.glsl";
     const char* fShader_grid = ":/src/Shaders/fragment_shader_gouraud.glsl";
+    */
+    const char* vNoShader = ":/src/Shaders/no_shader.vert";
+    const char* fNoShader = ":/src/Shaders/no_shader.frag";
+    const char* vShader_grid = ":/src/Shaders/gouraud_120.vert";
+    const char* fShader_grid = ":/src/Shaders/gouraud_120.frag";
 
     glEnable              ( GL_DEBUG_OUTPUT );
-    GlobalsGL::f()->glDebugMessageCallback( GlobalsGL::MessageCallback, 0 );
+    // GlobalsGL::f()->glDebugMessageCallback( GlobalsGL::MessageCallback, 0 );
+#else
+    const char* vNoShader = ":/src/Shaders/no_shader.vert";
+    const char* fNoShader = ":/src/Shaders/no_shader.frag";
+    const char* vShader_grid = ":/src/Shaders/gouraud_120.vert";
+    const char* fShader_grid = ":/src/Shaders/gouraud_120.frag";
+
+    glEnable              ( GL_DEBUG_OUTPUT );
+    // GlobalsGL::f()->glDebugMessageCallback( GlobalsGL::MessageCallback, 0 );
+
+#endif
 
     Shader::default_shader = std::make_shared<Shader>(vNoShader, fNoShader);
     ControlPoint::base_shader = std::make_shared<Shader>(vNoShader, fNoShader);
@@ -155,9 +172,10 @@ void ShoulderSelectionViewer::draw()
     this->coronalPlaneMesh.display();
     this->friedmanAxisMesh.display(GL_LINES, 3.f);
 
+
+
+    glClear(GL_DEPTH_BUFFER_BIT);
     this->entryPointOnFriedman->display();
-
-
     dirMesh.shader->setVector("color", std::vector<float>({.0f, .0f, 1.f, 1.f}));
     normalMesh.shader->setVector("color", std::vector<float>({.0f, 1.f, .0f, 1.f}));
     binormalMesh.shader->setVector("color", std::vector<float>({1.f, .0f, .0f, 1.f}));
@@ -623,7 +641,7 @@ void ShoulderSelectionViewer::openStlFile(std::string filename)
                 );
 
     float globalAmbiant[4] = {.10, .10, .10, 1.0};
-#if useModernOpenGL
+#if useModernOpenGL | !useModernOpenGL
     shoulderMesh.shader->clearLightSources("lights");
     shoulderMesh.shader->addLightSource("lights", light0);
     shoulderMesh.shader->addLightSource("lights", light1);
@@ -631,7 +649,7 @@ void ShoulderSelectionViewer::openStlFile(std::string filename)
 #else
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
-    glEnable(GL_LIGHT1);
+    //glEnable(GL_LIGHT1);
     shoulderMesh.colorsArray = std::vector<Vector3>(shoulderMesh.vertexArray.size(), Vector3(204/255.f, 198/255.f, 181/255.f));
     shoulderMesh.computeColors();
 

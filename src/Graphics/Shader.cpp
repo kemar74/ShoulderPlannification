@@ -36,7 +36,7 @@ Shader::Shader(Shader& copy) {
 }
 void Shader::compileShadersFromSource()
 {
-#if useModernOpenGL
+#if useModernOpenGL || !useModernOpenGL
     this->programID = GlobalsGL::f()->glCreateProgram();
     if (vertexShaderFilename != nullptr)
     {

@@ -124,19 +124,10 @@
               </item>
               <item>
                <layout class="QGridLayout" name="gridLayout_2">
-                <item row="1" column="1">
-                 <widget class="QDoubleSpinBox" name="version_input">
-                  <property name="minimum">
-                   <double>-180.000000000000000</double>
-                  </property>
-                  <property name="maximum">
-                   <double>180.000000000000000</double>
-                  </property>
-                  <property name="singleStep">
-                   <double>1.000000000000000</double>
-                  </property>
-                  <property name="stepType">
-                   <enum>QAbstractSpinBox::DefaultStepType</enum>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label">
+                  <property name="text">
+                   <string>Inclinaison (°)</string>
                   </property>
                  </widget>
                 </item>
@@ -160,10 +151,26 @@
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label">
+                <item row="1" column="1">
+                 <widget class="QDoubleSpinBox" name="version_input">
+                  <property name="minimum">
+                   <double>-180.000000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>180.000000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>1.000000000000000</double>
+                  </property>
+                  <property name="stepType">
+                   <enum>QAbstractSpinBox::DefaultStepType</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_3">
                   <property name="text">
-                   <string>Inclinaison (°)</string>
+                   <string>Rotation (°)</string>
                   </property>
                  </widget>
                 </item>
@@ -174,13 +181,6 @@
                   </property>
                   <property name="maximum">
                    <double>180.000000000000000</double>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="0">
-                 <widget class="QLabel" name="label_3">
-                  <property name="text">
-                   <string>Rotation (°)</string>
                   </property>
                  </widget>
                 </item>
