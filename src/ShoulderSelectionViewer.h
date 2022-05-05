@@ -80,9 +80,9 @@ public:
 
     Mesh dirMesh, normalMesh, binormalMesh;
 
-    float inclinaison;
-    float version;
-    float rotation;
+    float inclinaison = 0;
+    float version = 0;
+    float rotation = 0;
 
     // Should not be in the class, but meh!
     float degToRad(float degrees);
