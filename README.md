@@ -128,7 +128,7 @@ Dans un invité de commande:
 C:\Qt\5.15.2\mingw81_64\bin\qtenv2.bat
 cd C:\chemin\vers\ShoulderPlannification\puis\le\dossier\avec\le\exe\cree
 windeployqt --no-quick-import --no-translations --no-system-d3d-compiler --dir "C:\chemin\vers\ShoulderPlannification" ShoulderPlannification.exe
-cp ShoulderPlannification.exe "C:\chemin\vers\ShoulderPlannification\ShoulderPlannification.exe"
+copy ShoulderPlannification.exe "C:\chemin\vers\ShoulderPlannification\ShoulderPlannification.exe"
 ```
 
 Vous pouvez maintenant lancer l'application depuis le .exe créé à la racine car il sera accompagné de plusieurs ".dll" et dossiers de Qt. N'hésitez pas à créer un raccourci pour lancer l'application depuis un endroit plus pratique.
@@ -141,9 +141,11 @@ Par la dernière compilation, vous avez créé un executable "lié" à QtCreator
 
 Dans un invité de commande:  
 ```
-cd C:\chemin\vers\ShoulderPlannification\puis\le\dossier\avec\le\app\cree
+cd \chemin\vers\ShoulderPlannification\puis\le\dossier\avec\le\app\cree
 macdeployqt ShoulderPlannification.app
-cp ShoulderPlannification.app "C:\chemin\vers\ShoulderPlannification\ShoulderPlannification.app"
+cp chemin/vers/libQGLViewer/QGLViewer/libQGLViewer.2.dylib Contents/Frameworks/libQGLViewer.2.dylib
+install_name_tool -change libQGLViewer.2.dylib @executable_path/../Frameworks/libQGLViewer.2.dylib ShoulderPlannification/Contents/MacOS/ShoulderPlannification
+macdeployqt ShoulderPlannification.app
 ```
 L'outil "macdeployqt" n'est peut-être pas inclu dans le PATH, donc il faudra possiblement le retrouver dans le dossier d'installation de Qt.  
 Le chemin est probablement du genre "chemin/vers/Qt/5.15.2/clang/bin/macdeployqt.app".
